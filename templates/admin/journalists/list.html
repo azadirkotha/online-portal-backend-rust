@@ -1,0 +1,62 @@
+{% extends "admin/base.html" %}
+{% block title %}Journalist applications{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Journalists</h1>
+    <p class="subtitle">Review sign-ups from people applying to write for the portal, or add a journalist yourself. Approving activates the account and gives it the Journalist role.</p>
+  </div>
+  <a class="btn" href="/journalists/new">
+    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    New journalist
+  </a>
+</div>
+
+<div class="actions wrap" style="margin-bottom:1rem">
+  <a class="btn {% if status != "pending" %}btn-secondary{% endif %} btn-sm" href="/journalists?status=pending&amp;q={{ q|urlencode }}">Pending ({{ c_pending }})</a>
+  <a class="btn {% if status != "approved" %}btn-secondary{% endif %} btn-sm" href="/journalists?status=approved&amp;q={{ q|urlencode }}">Approved ({{ c_approved }})</a>
+  <a class="btn {% if status != "rejected" %}btn-secondary{% endif %} btn-sm" href="/journalists?status=rejected&amp;q={{ q|urlencode }}">Rejected ({{ c_rejected }})</a>
+  <a class="btn {% if status != "all" %}btn-secondary{% endif %} btn-sm" href="/journalists?status=all&amp;q={{ q|urlencode }}">All ({{ c_all }})</a>
+</div>
+
+<form method="get" action="/journalists" class="actions wrap" style="margin-bottom:1rem;align-items:center">
+  <input type="hidden" name="status" value="{{ status }}">
+  <input type="text" name="q" value="{{ q }}" maxlength="100" placeholder="Search name, phone, NID number, email or username" aria-label="Search applications" style="flex:1;min-width:14rem">
+  <button type="submit" class="btn btn-sm">Search</button>
+  {% if !q.is_empty() %}<a class="btn btn-secondary btn-sm" href="/journalists?status={{ status }}">Clear</a>{% endif %}
+</form>
+
+<div class="card table-card">
+  <table class="table">
+    <thead>
+      <tr><th>Applicant</th><th>Contact</th><th>Occupation</th><th>Applied</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr>
+    </thead>
+    <tbody>
+    {% for a in items %}
+      <tr>
+        <td data-label="Applicant"><strong>{{ a.full_name }}</strong><br><small class="muted">@{{ a.username }}</small></td>
+        <td data-label="Contact">{{ a.email }}<br><small class="muted">{{ a.phone }}</small></td>
+        <td data-label="Occupation">{{ a.occupation }}{% if !a.current_platform.is_empty() %}<br><small class="muted">{{ a.current_platform }}</small>{% endif %}</td>
+        <td data-label="Applied">{{ a.created_at }}</td>
+        <td data-label="Status">{% if a.status == "approved" %}<span class="badge ok">Approved</span>{% else if a.status == "rejected" %}<span class="badge">Rejected</span>{% else %}<span class="badge">Pending</span>{% endif %}</td>
+        <td class="cell-actions">
+          {% if a.status == "approved" %}<a class="btn btn-secondary btn-sm" href="/journalists/{{ a.id }}/edit">Edit</a>{% endif %}
+          <a class="btn btn-secondary btn-sm" href="/journalists/{{ a.id }}">{% if a.status == "pending" %}Review{% else %}View{% endif %}</a>
+        </td>
+      </tr>
+    {% endfor %}
+    {% if items.is_empty() %}
+      <tr><td colspan="6" class="muted" style="text-align:center;padding:2rem">{% if q.is_empty() %}No applications here.{% else %}No applications match your search.{% endif %}</td></tr>
+    {% endif %}
+    </tbody>
+  </table>
+</div>
+
+{% if total_pages > 1 %}
+<div class="actions" style="margin-top:1rem;align-items:center">
+  {% if has_prev %}<a class="btn btn-secondary btn-sm" href="/journalists?status={{ status }}&amp;q={{ q|urlencode }}&amp;page={{ prev }}">&larr; Previous</a>{% endif %}
+  <span class="muted">Page {{ page }} of {{ total_pages }}</span>
+  {% if has_next %}<a class="btn btn-secondary btn-sm" href="/journalists?status={{ status }}&amp;q={{ q|urlencode }}&amp;page={{ next }}">Next &rarr;</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

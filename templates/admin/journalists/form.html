@@ -1,0 +1,145 @@
+{% extends "admin/base.html" %}
+{% block title %}{% if is_new %}New journalist{% else %}Edit journalist{% endif %}{% endblock %}
+{% block head %}
+  <script src="/static/image-field.js" defer></script>
+{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    {% if is_new %}<a class="back" href="/journalists">&larr; Journalists</a>{% else %}<a class="back" href="/journalists/{{ id }}">&larr; Application</a>{% endif %}
+    <h1>{% if is_new %}New journalist{% else %}Edit journalist{% endif %}</h1>
+    <p class="subtitle">{% if is_new %}Creates an approved journalist account with the Journalist role. No application documents are needed.{% else %}@{{ v.username }}{% endif %}</p>
+  </div>
+</div>
+
+<form method="post" action="{% if is_new %}/journalists/new{% else %}/journalists/{{ id }}/edit{% endif %}" id="journalist-form" class="stack-lg" data-csrf="{{ layout.csrf }}">
+  <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+
+  <section class="card form wide">
+    <h2>Account</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label for="name">Full name</label>
+        <input id="name" type="text" name="name" maxlength="100" value="{{ v.name }}" required>
+      </div>
+      <div class="field">
+        <label for="username">Username</label>
+        {% if is_new %}
+        <input id="username" type="text" name="username" maxlength="30" value="{{ v.username }}" autocomplete="off" autocapitalize="none" required>
+        <span class="hint">3&ndash;30 characters: letters, numbers, _ . -</span>
+        {% else %}
+        <input id="username" type="text" value="{{ v.username }}" disabled>
+        <span class="hint">The username can't be changed.</span>
+        {% endif %}
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" name="email" maxlength="255" value="{{ v.email }}" required>
+      </div>
+      <div class="field">
+        <label for="phone">Phone</label>
+        <input id="phone" type="text" name="phone" maxlength="40" value="{{ v.phone }}" inputmode="tel" required>
+      </div>
+      <div class="field span-2">
+        <label for="password">{% if is_new %}Password{% else %}Reset password{% endif %}</label>
+        <input id="password" type="password" name="password" autocomplete="new-password" minlength="8" maxlength="128" {% if is_new %}required{% endif %}>
+        <span class="hint">{% if is_new %}At least 8 characters.{% else %}Leave blank to keep the current password. Use this when a journalist emails support after forgetting theirs.{% endif %}</span>
+      </div>
+    </div>
+    {% if is_new || status == "approved" %}
+    <label class="choice">
+      <input type="checkbox" name="status" value="on" {% if v.active %}checked{% endif %}>
+      <span><strong>Active</strong><small>Can sign in to the journalist panel</small></span>
+    </label>
+    {% else %}
+    <div class="notice">This application is {{ status }}. Approve it from the application page to activate the account.</div>
+    {% endif %}
+  </section>
+
+  <section class="card form wide">
+    <h2>Journalist details</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label for="nid_number">NID number</label>
+        <input id="nid_number" type="text" name="nid_number" maxlength="20" value="{{ v.nid_number }}" inputmode="numeric" autocomplete="off" required>
+        <span class="hint">10, 13 or 17 digits.</span>
+      </div>
+      <div class="field">
+        <label for="designation">Designation</label>
+        <input id="designation" type="text" name="designation" maxlength="120" value="{{ v.staff.designation }}" placeholder="e.g. Senior Reporter">
+        <span class="hint">Shown on the press card and with their articles.</span>
+      </div>
+      <div class="field">
+        <label for="occupation">Occupation</label>
+        <input id="occupation" type="text" name="occupation" maxlength="100" value="{{ v.occupation }}" required>
+      </div>
+      <div class="field">
+        <label for="current_platform">Current organisation <span class="muted">(optional)</span></label>
+        <input id="current_platform" type="text" name="current_platform" maxlength="150" value="{{ v.current_platform }}">
+      </div>
+      <div class="field span-2">
+        <label for="platform_phone">Organisation phone <span class="muted">(optional)</span></label>
+        <input id="platform_phone" type="text" name="platform_phone" maxlength="40" value="{{ v.platform_phone }}" inputmode="tel">
+      </div>
+      <div class="field span-2">
+        <label for="about">About <span class="muted">(optional, internal)</span></label>
+        <textarea id="about" name="about" rows="3" maxlength="1000">{{ v.about }}</textarea>
+      </div>
+    </div>
+  </section>
+
+  <section class="card form wide">
+    <h2>Profile</h2>
+    <div class="field">
+      <label>Photo</label>
+      <div class="image-field" data-image-field>
+        <input type="hidden" name="photo" value="{{ v.staff.photo }}" data-image-value>
+        <div class="image-preview round" data-image-preview {% if v.staff.photo.is_empty() %}hidden{% endif %}><img {% if !v.staff.photo.is_empty() %}src="{{ v.staff.photo }}"{% endif %} alt="" data-image-img></div>
+        <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" data-image-file hidden>
+        <div class="actions wrap">
+          <button type="button" class="btn btn-secondary btn-sm" data-image-pick>Choose photo</button>
+          <button type="button" class="btn btn-secondary btn-sm" data-image-remove {% if v.staff.photo.is_empty() %}hidden{% endif %}>Remove</button>
+        </div>
+        <p class="hint" data-image-status role="status"></p>
+      </div>
+    </div>
+    <div class="field">
+      <label for="bio">Short bio <span class="muted">(optional, shown with their articles)</span></label>
+      <textarea id="bio" name="bio" rows="3" maxlength="500">{{ v.staff.bio }}</textarea>
+    </div>
+  </section>
+
+  <section class="card form wide" id="press-card">
+    <div>
+      <h2>Press card</h2>
+      <p class="hint">Issued by an administrator. The journalist can see these details but not change them.</p>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="journalist_number">Journalist number</label>
+        <input id="journalist_number" type="text" name="journalist_number" maxlength="50" value="{{ v.staff.journalist_number }}" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="blood_group">Blood group</label>
+        <select id="blood_group" name="blood_group">
+          <option value="">Not set</option>
+          {% for b in blood_groups %}<option value="{{ b.value }}" {% if b.selected %}selected{% endif %}>{{ b.value }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="card_issue_date">Card issue date</label>
+        <input id="card_issue_date" type="date" name="card_issue_date" value="{{ v.staff.card_issue_date }}">
+      </div>
+      <div class="field">
+        <label for="card_expiry_date">Card expiry date</label>
+        <input id="card_expiry_date" type="date" name="card_expiry_date" value="{{ v.staff.card_expiry_date }}">
+      </div>
+    </div>
+  </section>
+
+  <div class="actions form-actions">
+    <button type="submit" class="btn">{% if is_new %}Create journalist{% else %}Save changes{% endif %}</button>
+    <a href="{% if is_new %}/journalists{% else %}/journalists/{{ id }}{% endif %}" class="btn btn-secondary">Cancel</a>
+  </div>
+</form>
+{% endblock %}

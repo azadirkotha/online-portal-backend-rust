@@ -1,0 +1,56 @@
+{% extends "admin/base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Users</h1>
+    <p class="subtitle">Accounts that can sign in to the API and, with the right role, this dashboard.</p>
+  </div>
+  {% if can_create %}
+  <a class="btn" href="/users/new">
+    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    New user
+  </a>
+  {% endif %}
+</div>
+
+<form method="get" action="/users" class="actions wrap" style="margin-bottom:1rem;align-items:center">
+  <input type="text" name="q" value="{{ q }}" maxlength="100" placeholder="Search name, phone, email, username or journalist no." aria-label="Search users" style="flex:1;min-width:14rem">
+  <button type="submit" class="btn btn-sm">Search</button>
+  {% if !q.is_empty() %}<a class="btn btn-secondary btn-sm" href="/users">Clear</a>{% endif %}
+</form>
+
+<div class="card table-card">
+  <table class="table">
+    <thead>
+      <tr><th>Name</th><th>Username</th><th>Email</th><th>Roles</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr>
+    </thead>
+    <tbody>
+    {% for u in users %}
+      <tr>
+        <td data-label="Name">
+          <span class="user-cell">
+            {% if !u.photo.is_empty() %}<img class="avatar-img" src="{{ u.photo }}" alt="" loading="lazy">{% else %}<span class="avatar-initial" aria-hidden="true">{{ u.initial }}</span>{% endif %}
+            <span class="user-cell-text"><strong>{{ u.name }}</strong>{% if !u.designation.is_empty() %}<small>{{ u.designation }}</small>{% endif %}{% if !u.journalist_number.is_empty() %}<small>Journalist no. {{ u.journalist_number }}</small>{% endif %}</span>
+          </span>
+        </td>
+        <td data-label="Username">{{ u.username }}</td>
+        <td data-label="Email">{{ u.email }}</td>
+        <td data-label="Roles">{% if u.roles.is_empty() %}<span class="muted">None</span>{% else %}{{ u.roles }}{% endif %}</td>
+        <td data-label="Status">{% if u.active %}<span class="badge ok">Active</span>{% else %}<span class="badge">Inactive</span>{% endif %}</td>
+        <td class="cell-actions">{% if can_edit %}<a class="btn btn-secondary btn-sm" href="/users/{{ u.id }}/edit">Edit</a>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    {% if users.is_empty() %}
+      <tr><td colspan="6" class="muted" style="text-align:center;padding:2rem">{% if q.is_empty() %}No users yet.{% else %}No users match your search.{% endif %}</td></tr>
+    {% endif %}
+    </tbody>
+  </table>
+</div>
+
+<div class="actions" style="margin-top:1rem;align-items:center">
+  {% if has_prev %}<a class="btn btn-secondary btn-sm" href="/users?q={{ q|urlencode }}&amp;page={{ prev }}">&larr; Previous</a>{% endif %}
+  <span class="muted">{{ total }} user(s){% if total_pages > 1 %} &middot; page {{ page }} of {{ total_pages }}{% endif %}</span>
+  {% if has_next %}<a class="btn btn-secondary btn-sm" href="/users?q={{ q|urlencode }}&amp;page={{ next }}">Next &rarr;</a>{% endif %}
+</div>
+{% endblock %}

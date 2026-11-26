@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{% block title %}Admin{% endblock %} · {{ layout.site_name() }} Admin</title>
+  {% if !layout.logo().is_empty() %}<link rel="icon" href="{{ layout.logo() }}">{% endif %}
+  <link rel="stylesheet" href="/static/admin.css">
+  <link rel="stylesheet" href="/static/taxonomy.css">
+  <link rel="stylesheet" href="/static/newsroom.css">
+  <link rel="stylesheet" href="/static/menus.css">
+  <link rel="stylesheet" href="/static/profile.css">
+  {% block head %}{% endblock %}
+  <script src="/static/admin.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <button type="button" class="icon-btn" id="nav-toggle" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <span class="brand">
+      {% if layout.logo().is_empty() %}<span class="brand-mark">{{ layout.site_initial() }}</span>{% else %}<img class="brand-logo" src="{{ layout.logo() }}" alt="">{% endif %}
+      <span class="brand-name">{{ layout.site_name() }}</span>
+    </span>
+  </header>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <span class="brand">
+        {% if layout.logo().is_empty() %}<span class="brand-mark">{{ layout.site_initial() }}</span>{% else %}<img class="brand-logo" src="{{ layout.logo() }}" alt="">{% endif %}
+        <span class="brand-name">{{ layout.site_name() }}</span> <small>Admin</small>
+      </span>
+    </div>
+
+    <nav class="nav" aria-label="Main">
+      <a href="/" data-nav="/">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13h8V3H3zM13 21h8V11h-8zM13 3v6h8V3zM3 21h8v-6H3z"/></svg>
+        Dashboard
+      </a>
+      {% if layout.can_users %}
+      <a href="/users" data-nav="/users">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M21 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Users
+      </a>
+      {% endif %}
+      {% if layout.can_journalists %}
+      <a href="/journalists" data-nav="/journalists">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.4 1.7-2 3-2s2.4.6 3 2M14 10h4M14 14h4"/></svg>
+        Journalists
+      </a>
+      {% endif %}
+      {% if layout.can_roles %}
+      <a href="/roles" data-nav="/roles">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>
+        Roles &amp; permissions
+      </a>
+      {% endif %}
+      {% if layout.can_categories || layout.can_sub_categories || layout.can_tags %}<div class="nav-label">Content</div>{% endif %}
+      {% if layout.can_categories %}
+      <a href="/categories" data-nav="/categories">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        Categories
+      </a>
+      {% endif %}
+      {% if layout.can_sub_categories %}
+      <a href="/sub-categories" data-nav="/sub-categories">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg>
+        Sub categories
+      </a>
+      {% endif %}
+      {% if layout.can_tags %}
+      <a href="/tags" data-nav="/tags">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12l-8 8-9-9V4h7z"/><circle cx="7.5" cy="8.5" r="1"/></svg>
+        Tags
+      </a>
+      {% endif %}
+      {% if layout.can_articles || layout.can_front_page || layout.can_breaking %}<div class="nav-label">Newsroom</div>{% endif %}
+      {% if layout.can_breaking %}
+      <a href="/breaking-news" data-nav="/breaking-news">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+        Breaking news
+      </a>
+      {% endif %}
+      {% if layout.can_articles %}
+      <a href="/articles" data-nav="/articles">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h11l3 3v15H5z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+        Articles
+      </a>
+      {% endif %}
+      {% if layout.can_front_page %}
+      <a href="/front-page" data-nav="/front-page">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></svg>
+        Front page
+      </a>
+      {% endif %}
+      {% if layout.can_menus || layout.can_settings %}<div class="nav-label">Site</div>{% endif %}
+      {% if layout.can_menus %}
+      <a href="/menus" data-nav="/menus">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        Menus
+      </a>
+      {% endif %}
+      {% if layout.can_settings %}
+      <a href="/settings" data-nav="/settings">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h8M18 6h2M4 12h2M12 12h8M4 18h12M20 18h0"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+        Site settings
+      </a>
+      {% endif %}
+    </nav>
+
+    <form method="post" action="/logout" class="sidebar-foot">
+      <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+      <a class="account" href="/account" title="My account">
+        {% if !layout.photo.is_empty() %}<img class="avatar-img" src="{{ layout.photo }}" alt="">{% else %}<span class="avatar-initial" aria-hidden="true">{{ layout.initial }}</span>{% endif %}
+        <span class="account-name">{{ layout.display_name }}</span>
+      </a>
+      <button type="submit" class="icon-btn" aria-label="Sign out" title="Sign out">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      </button>
+    </form>
+  </aside>
+  <div class="overlay" id="nav-overlay" hidden></div>
+
+  <main class="main">
+    <div class="container">
+      {% if let Some(msg) = layout.flash %}<div class="flash" role="status">{{ msg }}</div>{% endif %}
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+</body>
+</html>

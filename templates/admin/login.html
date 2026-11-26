@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Sign in · {{ self.site_name() }} Admin</title>
+  {% if !self.logo().is_empty() %}<link rel="icon" href="{{ self.logo() }}">{% endif %}
+  <link rel="preload" href="/static/fonts/plus-jakarta-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/static/login.css">
+  <script src="/static/login.js" defer></script>
+</head>
+<body class="lg">
+  <main class="lg-wrap">
+    <div class="lg-brand">
+      {% if self.logo().is_empty() %}<span class="lg-mark">{{ self.site_initial() }}</span>{% else %}<img class="lg-logo" src="{{ self.logo() }}" alt="">{% endif %}
+      <span class="lg-name">{{ self.site_name() }}</span>
+    </div>
+
+    <form method="post" action="/login" class="lg-card" id="login-form">
+      <h1>Sign in</h1>
+      <p class="lg-sub">Admin dashboard</p>
+
+      {% if let Some(err) = error %}<div class="lg-alert" role="alert">{{ err }}</div>{% endif %}
+      <input type="hidden" name="csrf_token" value="{{ csrf }}">
+
+      <div class="lg-field">
+        <label for="username">Username</label>
+        <input class="lg-input" id="username" type="text" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required autofocus>
+      </div>
+
+      <div class="lg-field">
+        <label for="password">Password</label>
+        <div class="lg-pw">
+          <input class="lg-input" id="password" type="password" name="password" autocomplete="current-password" required>
+          <button type="button" class="lg-toggle" id="pw-toggle" aria-label="Show password" aria-pressed="false">
+            <svg class="eye" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 5.1A9.7 9.7 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17 17 0 0 0 2 12s3.6 7 10 7a9.6 9.6 0 0 0 4.4-1.1M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+          </button>
+        </div>
+        <p class="lg-caps" id="caps-hint" hidden>Caps Lock is on</p>
+      </div>
+
+      <button type="submit" class="lg-btn" id="login-btn"><span>Sign in</span></button>
+    </form>
+
+    <p class="lg-foot">Authorised staff only</p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Dashboard</h1>
+    <p class="subtitle">Welcome back, {{ layout.username }}.</p>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="card stat">
+    <span class="stat-label">Users</span>
+    <strong class="stat-value">{{ users }}</strong>
+  </div>
+  <div class="card stat">
+    <span class="stat-label">Roles</span>
+    <strong class="stat-value">{{ roles }}</strong>
+  </div>
+  <div class="card stat">
+    <span class="stat-label">Permissions</span>
+    <strong class="stat-value">{{ permissions }}</strong>
+  </div>
+</div>
+
+{% if layout.can_users || layout.can_roles %}
+<section class="card section">
+  <h2>Manage</h2>
+  <div class="actions wrap">
+    {% if layout.can_users %}<a class="btn btn-secondary" href="/users">Users</a>{% endif %}
+    {% if layout.can_roles %}<a class="btn btn-secondary" href="/roles">Roles &amp; permissions</a>{% endif %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

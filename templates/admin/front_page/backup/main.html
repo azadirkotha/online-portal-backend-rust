@@ -1,0 +1,66 @@
+{% extends "admin/base.html" %}
+{% block title %}Front page{% endblock %}
+{% block head %}
+  <script src="/static/vendor/sortable/Sortable.min.js" defer></script>
+  <script src="/static/front-page.js" defer></script>
+{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Front page</h1>
+    <p class="subtitle">Drag published stories into the main section. Empty places are filled automatically with the newest stories.</p>
+  </div>
+</div>
+
+<nav class="tabs" aria-label="Front page sections">
+  <a href="/front-page" aria-current="page">Main section</a>
+  <a href="/front-page/categories">Category sections</a>
+  <a href="/front-page/leads">Category leads</a>
+</nav>
+
+<form method="post" action="/front-page" id="fp-form">
+  <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+  <input type="hidden" name="lead" id="in-lead">
+  <input type="hidden" name="center" id="in-center">
+  <input type="hidden" name="left" id="in-left">
+
+  <div class="fp-layout">
+    <div class="fp-zones">
+      {% for z in zones %}
+      <section class="card fp-zone">
+        <header><h2>{{ z.label }}</h2><span class="fp-count">{{ z.items.len() }}/{{ z.capacity }}</span></header>
+        <p class="hint">{{ z.hint }}</p>
+        <ul class="fp-list" data-zone="{{ z.key }}" data-capacity="{{ z.capacity }}" data-empty="Drop stories here">
+          {% for b in z.items %}
+          <li class="fp-item" data-id="{{ b.id }}">
+            <span class="fp-thumb">{% if !b.thumb.is_empty() %}<img src="{{ b.thumb }}" alt="" loading="lazy">{% endif %}</span>
+            <span class="fp-text"><strong>{{ b.title }}</strong><small>{{ b.published_at }}</small></span>
+            <button type="button" class="fp-remove" aria-label="Remove from front page">&times;</button>
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endfor %}
+    </div>
+
+    <aside class="card fp-pool">
+      <header><h2>Published stories</h2></header>
+      <input type="search" id="fp-search" placeholder="Search by headline" aria-label="Search published stories" autocomplete="off">
+      <ul class="fp-list" data-zone="pool" data-empty="No other published stories">
+        {% for b in pool %}
+        <li class="fp-item" data-id="{{ b.id }}">
+          <span class="fp-thumb">{% if !b.thumb.is_empty() %}<img src="{{ b.thumb }}" alt="" loading="lazy">{% endif %}</span>
+          <span class="fp-text"><strong>{{ b.title }}</strong><small>{{ b.published_at }}</small></span>
+          <button type="button" class="fp-remove" aria-label="Remove from front page">&times;</button>
+        </li>
+        {% endfor %}
+      </ul>
+    </aside>
+  </div>
+
+  <div class="actions form-actions sticky-actions">
+    <button type="submit" class="btn">Save arrangement</button>
+    <span class="muted small">Only published stories can be placed.</span>
+  </div>
+</form>
+{% endblock %}

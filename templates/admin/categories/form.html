@@ -1,0 +1,45 @@
+{% extends "admin/base.html" %}
+{% block title %}{% if is_edit %}Edit category{% else %}New category{% endif %}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <a class="back" href="/categories">&larr; Categories</a>
+    <h1>{% if is_edit %}Edit category{% else %}New category{% endif %}</h1>
+  </div>
+</div>
+
+<form method="post" action="{% if is_edit %}/categories/{{ id }}{% else %}/categories{% endif %}" class="card form">
+  <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+
+  <div class="form-grid">
+    <div class="field">
+      <label for="name">Name</label>
+      <input id="name" type="text" name="name" maxlength="120" value="{{ values.name }}" required>
+    </div>
+    <div class="field">
+      <label for="slug">Slug</label>
+      <input id="slug" type="text" name="slug" maxlength="150" value="{{ values.slug }}" autocapitalize="none">
+      <span class="hint">Leave blank to generate it from the name.</span>
+    </div>
+    <div class="field span-2">
+      <label for="description">Description</label>
+      <textarea id="description" name="description" rows="3" maxlength="500">{{ values.description }}</textarea>
+    </div>
+    <div class="field">
+      <label for="sort_order">Sort order</label>
+      <input id="sort_order" type="text" inputmode="numeric" name="sort_order" value="{{ values.sort_order }}">
+      <span class="hint">Lower numbers appear first.</span>
+    </div>
+  </div>
+
+  <label class="choice">
+    <input type="checkbox" name="is_active" value="on" {% if values.is_active %}checked{% endif %}>
+    <span><strong>Active</strong><small>Visible on the public site</small></span>
+  </label>
+
+  <div class="actions form-actions">
+    <button type="submit" class="btn">{% if is_edit %}Save changes{% else %}Create category{% endif %}</button>
+    <a href="/categories" class="btn btn-secondary">Cancel</a>
+  </div>
+</form>
+{% endblock %}

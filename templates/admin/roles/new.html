@@ -1,0 +1,42 @@
+{% extends "admin/base.html" %}
+{% block title %}New role{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <a class="back" href="/roles">&larr; Roles</a>
+    <h1>New role</h1>
+  </div>
+</div>
+
+<form method="post" action="/roles" class="card form">
+  <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+
+  <div class="form-grid">
+    <div class="field">
+      <label for="name">Role name</label>
+      <input id="name" type="text" name="name" maxlength="100" required>
+    </div>
+    <div class="field">
+      <label for="description">Description</label>
+      <input id="description" type="text" name="description" maxlength="255">
+    </div>
+  </div>
+
+  <fieldset>
+    <legend>Permissions</legend>
+    <div class="choice-grid">
+    {% for p in perms %}
+      <label class="choice">
+        <input type="checkbox" name="permission_ids" value="{{ p.id }}" {% if p.checked %}checked{% endif %}>
+        <span><code>{{ p.label }}</code></span>
+      </label>
+    {% endfor %}
+    </div>
+  </fieldset>
+
+  <div class="actions form-actions">
+    <button type="submit" class="btn">Create role</button>
+    <a href="/roles" class="btn btn-secondary">Cancel</a>
+  </div>
+</form>
+{% endblock %}

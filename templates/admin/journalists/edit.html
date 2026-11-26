@@ -1,0 +1,137 @@
+{% extends "admin/base.html" %}
+{% block title %}Edit user{% endblock %}
+{% block head %}
+  <script src="/static/image-field.js" defer></script>
+  <script src="/static/user-form.js" defer></script>
+{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <a class="back" href="/users">&larr; Users</a>
+    <h1>Edit user</h1>
+    <p class="subtitle">{{ v.username }}</p>
+  </div>
+</div>
+
+<form method="post" action="/users/{{ id }}" id="user-form" class="stack-lg" data-csrf="{{ layout.csrf }}">
+  <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+
+  <section class="card form wide">
+    <h2>Account</h2>
+    <div class="form-grid">
+      <div class="field span-2">
+        <label for="name">Full name</label>
+        <input id="name" type="text" name="name" maxlength="255" value="{{ v.name }}" required>
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" name="email" maxlength="255" value="{{ v.email }}" required>
+      </div>
+      <div class="field">
+        <label for="phone">Phone</label>
+        <input id="phone" type="text" name="phone" maxlength="50" value="{{ v.phone }}" inputmode="tel" required>
+      </div>
+      <div class="field span-2">
+        <label for="new_password">Reset password</label>
+        <input id="new_password" type="password" name="new_password" autocomplete="new-password" minlength="10">
+        <span class="hint">Leave blank to keep the current password.</span>
+      </div>
+    </div>
+    {% if is_self %}
+      <div class="notice">You can't change your own status or roles.</div>
+    {% else %}
+      <label class="choice">
+        <input type="checkbox" name="status" value="on" {% if v.active %}checked{% endif %}>
+        <span><strong>Active</strong><small>Can sign in</small></span>
+      </label>
+    {% endif %}
+  </section>
+
+  <section class="card form wide">
+    <h2>Profile</h2>
+    <div class="field">
+      <label>Photo</label>
+      <div class="image-field" data-image-field>
+        <input type="hidden" name="photo" value="{{ v.staff.photo }}" data-image-value>
+        <div class="image-preview round" data-image-preview {% if v.staff.photo.is_empty() %}hidden{% endif %}><img {% if !v.staff.photo.is_empty() %}src="{{ v.staff.photo }}"{% endif %} alt="" data-image-img></div>
+        <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" data-image-file hidden>
+        <div class="actions wrap">
+          <button type="button" class="btn btn-secondary btn-sm" data-image-pick>Choose photo</button>
+          <button type="button" class="btn btn-secondary btn-sm" data-image-remove {% if v.staff.photo.is_empty() %}hidden{% endif %}>Remove</button>
+        </div>
+        <p class="hint" data-image-status role="status"></p>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field span-2">
+        <label for="designation">Designation</label>
+        <input id="designation" type="text" name="designation" maxlength="120" value="{{ v.staff.designation }}" placeholder="e.g. Senior Reporter">
+      </div>
+      <div class="field span-2">
+        <label for="bio">Short bio <span class="muted">(optional, shown with their articles)</span></label>
+        <textarea id="bio" name="bio" rows="3" maxlength="500">{{ v.staff.bio }}</textarea>
+      </div>
+    </div>
+  </section>
+
+  {% if can_assign && !is_self %}
+  <section class="card form wide">
+    <h2>Roles</h2>
+    <div class="choice-grid">
+    {% for r in roles %}
+      <label class="choice">
+        <input type="checkbox" name="role_ids" value="{{ r.id }}" {% if r.checked %}checked{% endif %} {% if r.is_journalist %}data-journalist{% endif %}>
+        <span><strong>{{ r.label }}</strong></span>
+      </label>
+    {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="card form wide" id="press-card" {% if !show_press_card %}hidden{% endif %}>
+    <div>
+      <h2>Press card</h2>
+      <p class="hint">For journalists. These details are issued by an administrator and the journalist can see but not change them.</p>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="journalist_number">Journalist number</label>
+        <input id="journalist_number" type="text" name="journalist_number" maxlength="50" value="{{ v.staff.journalist_number }}" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="blood_group">Blood group</label>
+        <select id="blood_group" name="blood_group">
+          <option value="">Not set</option>
+          {% for b in blood_groups %}<option value="{{ b.value }}" {% if b.selected %}selected{% endif %}>{{ b.value }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="card_issue_date">Card issue date</label>
+        <input id="card_issue_date" type="date" name="card_issue_date" value="{{ v.staff.card_issue_date }}">
+      </div>
+      <div class="field">
+        <label for="card_expiry_date">Card expiry date</label>
+        <input id="card_expiry_date" type="date" name="card_expiry_date" value="{{ v.staff.card_expiry_date }}">
+      </div>
+    </div>
+  </section>
+
+  <div class="actions form-actions">
+    <button type="submit" class="btn">Save changes</button>
+    <a href="/users" class="btn btn-secondary">Cancel</a>
+  </div>
+</form>
+
+{% if can_delete %}
+{# Separate form: forms can't be nested, so the delete button lives outside the edit form. #}
+<section class="card form wide" style="margin-top:1.5rem;border-color:#d9534f">
+  <h2 style="color:#b02a37">Delete user</h2>
+  <p class="hint">Permanently removes this account, its roles and any journalist application with its uploaded documents. This cannot be undone. A user who has written articles can't be deleted &mdash; deactivate the account instead.</p>
+  <form method="post" action="/users/{{ id }}/delete"
+        onsubmit="return confirm('Delete user {{ v.username }}? This cannot be undone.');">
+    <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+    <button type="submit" class="btn" style="background:#b02a37;border-color:#b02a37">Delete this user</button>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

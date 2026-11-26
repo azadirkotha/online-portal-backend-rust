@@ -1,0 +1,43 @@
+{% extends "admin/base.html" %}
+{% block title %}Roles{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Roles &amp; permissions</h1>
+    <p class="subtitle">A role is a named set of permissions you can assign to users.</p>
+  </div>
+  {% if can_write %}
+  <a class="btn" href="/roles/new">
+    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    New role
+  </a>
+  {% endif %}
+</div>
+
+<div class="card table-card">
+  <table class="table">
+    <thead>
+      <tr><th>Role</th><th>Description</th><th class="num">Permissions</th><th class="num">Users</th><th><span class="sr-only">Actions</span></th></tr>
+    </thead>
+    <tbody>
+    {% for r in roles %}
+      <tr>
+        <td data-label="Role"><strong>{{ r.name }}</strong>{% if r.locked %} <span class="badge">Protected</span>{% endif %}</td>
+        <td data-label="Description">{% if r.description.is_empty() %}<span class="muted">&mdash;</span>{% else %}{{ r.description }}{% endif %}</td>
+        <td data-label="Permissions" class="num">{{ r.perm_count }}</td>
+        <td data-label="Users" class="num">{{ r.user_count }}</td>
+        <td class="cell-actions">
+          {% if can_write && !r.locked %}
+            <a class="btn btn-secondary btn-sm" href="/roles/{{ r.id }}/edit">Edit</a>
+            <form method="post" action="/roles/{{ r.id }}/delete" class="inline" data-confirm="Delete the role &quot;{{ r.name }}&quot;? Users will lose its permissions immediately.">
+              <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+              <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

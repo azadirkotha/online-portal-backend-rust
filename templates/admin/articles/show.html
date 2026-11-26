@@ -1,0 +1,73 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ a.title }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <a class="back" href="/articles">&larr; Articles</a>
+    <h1>{{ a.title }}</h1>
+    <p class="subtitle">
+      <span class="badge {% if a.status == "published" %}ok{% else if a.status == "pending" %}info{% else if a.status == "changes_requested" %}warn{% endif %}">{{ status_label }}</span>
+      &nbsp;By {{ a.author_name }} &middot; updated {{ a.updated_at }}{% if let Some(p) = a.published_at %} &middot; published {{ p }}{% endif %}
+    </p>
+  </div>
+  <div class="actions wrap">
+    {% if can_edit %}<a class="btn btn-secondary" href="/articles/{{ a.id }}/edit">Edit</a>{% endif %}
+    {% if can_submit %}
+    <form method="post" action="/articles/{{ a.id }}/submit" class="inline"><input type="hidden" name="csrf_token" value="{{ layout.csrf }}"><button type="submit" class="btn">Submit for review</button></form>
+    {% endif %}
+    {% if can_publish %}
+    <form method="post" action="/articles/{{ a.id }}/publish" class="inline"><input type="hidden" name="csrf_token" value="{{ layout.csrf }}"><button type="submit" class="btn">Publish</button></form>
+    {% endif %}
+    {% if can_unpublish %}
+    <form method="post" action="/articles/{{ a.id }}/unpublish" class="inline" data-confirm="Unpublish this article? It will also be removed from the front page."><input type="hidden" name="csrf_token" value="{{ layout.csrf }}"><button type="submit" class="btn btn-secondary">Unpublish</button></form>
+    {% endif %}
+    {% if can_delete %}
+    <form method="post" action="/articles/{{ a.id }}/delete" class="inline" data-confirm="Delete this article permanently?"><input type="hidden" name="csrf_token" value="{{ layout.csrf }}"><button type="submit" class="btn btn-danger">Delete</button></form>
+    {% endif %}
+  </div>
+</div>
+
+{% if a.status == "changes_requested" && !a.review_note.is_empty() %}
+<div class="notice warn"><strong>Changes requested:</strong> {{ a.review_note }}</div>
+{% endif %}
+
+<div class="article-grid">
+  <div class="article-main">
+    <article class="card preview">
+      {% if !a.featured_image.is_empty() %}
+      <figure class="lead-figure">
+        <img src="{{ a.featured_image }}" alt="">
+        {% if !a.featured_image_caption.is_empty() %}<figcaption>{{ a.featured_image_caption }}</figcaption>{% endif %}
+      </figure>
+      {% endif %}
+      <h2 class="preview-title">{{ a.title }}</h2>
+      {% if !a.summary.is_empty() %}<p class="preview-summary">{{ a.summary }}</p>{% endif %}
+      <div class="prose">{{ a.body|safe }}</div>
+    </article>
+  </div>
+
+  <aside class="article-side">
+    <div class="card side-card">
+      <h2>Details</h2>
+      <dl class="meta">
+        <dt>Type</dt><dd class="cap">{{ a.kind }}</dd>
+        <dt>Source</dt><dd>{% if a.news_source.is_empty() %}<span class="muted">Not set</span>{% else %}{{ a.news_source }}{% endif %}</dd>
+        <dt>Categories</dt><dd>{% if categories.is_empty() %}<span class="muted">None</span>{% else %}{% for c in categories %}<span class="chip">{{ c }}</span>{% endfor %}{% endif %}</dd>
+        <dt>Sub categories</dt><dd>{% if sub_categories.is_empty() %}<span class="muted">None</span>{% else %}{% for c in sub_categories %}<span class="chip">{{ c }}</span>{% endfor %}{% endif %}</dd>
+        <dt>Tags</dt><dd>{% if tags.is_empty() %}<span class="muted">None</span>{% else %}{% for c in tags %}<span class="chip">{{ c }}</span>{% endfor %}{% endif %}</dd>
+      </dl>
+    </div>
+
+    {% if can_request_changes %}
+    <div class="card side-card">
+      <h2>Send back for changes</h2>
+      <form method="post" action="/articles/{{ a.id }}/request-changes" class="stack">
+        <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+        <textarea name="note" rows="4" maxlength="1000" placeholder="What should the journalist fix?" required></textarea>
+        <button type="submit" class="btn btn-secondary">Send back</button>
+      </form>
+    </div>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

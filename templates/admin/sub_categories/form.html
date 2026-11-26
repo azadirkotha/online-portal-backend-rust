@@ -1,0 +1,58 @@
+{% extends "admin/base.html" %}
+{% block title %}{% if is_edit %}Edit sub category{% else %}New sub category{% endif %}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <a class="back" href="/sub-categories">&larr; Sub categories</a>
+    <h1>{% if is_edit %}Edit sub category{% else %}New sub category{% endif %}</h1>
+  </div>
+</div>
+
+{% if categories.is_empty() %}
+<div class="card form">
+  <div class="notice">You need at least one category first.</div>
+  <div class="actions"><a class="btn" href="/categories/new">Create a category</a></div>
+</div>
+{% else %}
+<form method="post" action="{% if is_edit %}/sub-categories/{{ id }}{% else %}/sub-categories{% endif %}" class="card form">
+  <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+
+  <div class="form-grid">
+    <div class="field span-2">
+      <label for="category_id">Parent category</label>
+      <select id="category_id" name="category_id" required>
+        {% for c in categories %}<option value="{{ c.id }}" {% if c.checked %}selected{% endif %}>{{ c.label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="name">Name</label>
+      <input id="name" type="text" name="name" maxlength="120" value="{{ values.name }}" required>
+    </div>
+    <div class="field">
+      <label for="slug">Slug</label>
+      <input id="slug" type="text" name="slug" maxlength="150" value="{{ values.slug }}" autocapitalize="none">
+      <span class="hint">Leave blank to generate it from the name.</span>
+    </div>
+    <div class="field span-2">
+      <label for="description">Description</label>
+      <textarea id="description" name="description" rows="3" maxlength="500">{{ values.description }}</textarea>
+    </div>
+    <div class="field">
+      <label for="sort_order">Sort order</label>
+      <input id="sort_order" type="text" inputmode="numeric" name="sort_order" value="{{ values.sort_order }}">
+      <span class="hint">Lower numbers appear first.</span>
+    </div>
+  </div>
+
+  <label class="choice">
+    <input type="checkbox" name="is_active" value="on" {% if values.is_active %}checked{% endif %}>
+    <span><strong>Active</strong><small>Visible on the public site</small></span>
+  </label>
+
+  <div class="actions form-actions">
+    <button type="submit" class="btn">{% if is_edit %}Save changes{% else %}Create sub category{% endif %}</button>
+    <a href="/sub-categories" class="btn btn-secondary">Cancel</a>
+  </div>
+</form>
+{% endif %}
+{% endblock %}

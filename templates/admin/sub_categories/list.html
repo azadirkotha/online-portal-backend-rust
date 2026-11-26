@@ -1,0 +1,45 @@
+{% extends "admin/base.html" %}
+{% block title %}Sub categories{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Sub categories</h1>
+    <p class="subtitle">Sections nested inside a category.</p>
+  </div>
+  {% if can_write %}
+  <a class="btn" href="/sub-categories/new">
+    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    New sub category
+  </a>
+  {% endif %}
+</div>
+
+<div class="card table-card">
+  <table class="table">
+    <thead>
+      <tr><th>Name</th><th>Category</th><th>Slug</th><th class="num">Order</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr>
+    </thead>
+    <tbody>
+    {% for s in items %}
+      <tr>
+        <td data-label="Name"><strong>{{ s.name }}</strong></td>
+        <td data-label="Category">{{ s.category_name }}</td>
+        <td data-label="Slug"><code>{{ s.slug }}</code></td>
+        <td data-label="Order" class="num">{{ s.sort_order }}</td>
+        <td data-label="Status">{% if s.is_active %}<span class="badge ok">Active</span>{% else %}<span class="badge">Hidden</span>{% endif %}</td>
+        <td class="cell-actions">
+          {% if can_write %}<a class="btn btn-secondary btn-sm" href="/sub-categories/{{ s.id }}/edit">Edit</a>{% endif %}
+          {% if can_delete %}
+          <form method="post" action="/sub-categories/{{ s.id }}/delete" class="inline" data-confirm="Delete the sub category &quot;{{ s.name }}&quot;?">
+            <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% if items.is_empty() %}<p class="empty">No sub categories yet.</p>{% endif %}
+</div>
+{% endblock %}

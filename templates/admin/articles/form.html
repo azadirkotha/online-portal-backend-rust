@@ -1,0 +1,119 @@
+{% extends "admin/base.html" %}
+{% block title %}{% if is_edit %}Edit article{% else %}New article{% endif %}{% endblock %}
+{% block head %}
+  <script src="/static/vendor/tinymce/tinymce.min.js" defer></script>
+  <script src="/static/article-form.js" defer></script>
+{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <a class="back" href="/articles">&larr; Articles</a>
+    <h1>{% if is_edit %}Edit article{% else %}New article{% endif %}</h1>
+  </div>
+</div>
+
+{% if status == "changes_requested" && !review_note.is_empty() %}
+<div class="notice warn"><strong>Changes requested by the editor:</strong> {{ review_note }}</div>
+{% endif %}
+
+<form method="post" action="{% if is_edit %}/articles/{{ id }}{% else %}/articles{% endif %}" id="article-form" data-csrf="{{ layout.csrf }}">
+  <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+
+  <div class="article-grid">
+    <div class="article-main">
+      <div class="card form wide">
+        <div class="field">
+          <label for="title">Headline</label>
+          <input id="title" class="headline" type="text" name="title" maxlength="255" value="{{ values.title }}" required>
+        </div>
+        <div class="field">
+          <label for="news_source">News source <span class="muted">(required)</span></label>
+          <input id="news_source" type="text" name="news_source" maxlength="150" value="{{ values.news_source }}" placeholder="e.g. Staff reporter, BSS, Prothom Alo" required>
+        </div>
+        <div class="field">
+          <label for="summary">Summary <span class="muted">(optional, shown on cards)</span></label>
+          <textarea id="summary" name="summary" rows="2" maxlength="500">{{ values.summary }}</textarea>
+        </div>
+        <div class="field">
+          <label for="body">Story</label>
+          <textarea id="body" name="body" rows="18">{{ values.body }}</textarea>
+          <span class="hint">Use the toolbar for fonts, sizes, colours and photos. Click a photo and choose <em>Caption</em> to add the photo details.</span>
+        </div>
+      </div>
+    </div>
+
+    <aside class="article-side">
+      <div class="card side-card">
+        <h2>Publish</h2>
+        <p class="muted small">Status: <strong>{% if status == "draft" %}Draft{% else if status == "pending" %}Pending review{% else if status == "changes_requested" %}Changes requested{% else if status == "published" %}Published{% endif %}</strong></p>
+        <div class="stack">
+          <button type="submit" name="action" value="save" class="btn btn-secondary">{% if is_reviewer %}Save changes{% else %}Save draft{% endif %}</button>
+          {% if can_submit %}<button type="submit" name="action" value="submit" class="btn">Submit for review</button>{% endif %}
+          {% if is_reviewer %}<button type="submit" name="action" value="publish" class="btn">{% if status == "published" %}Save &amp; keep published{% else %}Publish now{% endif %}</button>{% endif %}
+        </div>
+        {% if !is_reviewer %}<p class="muted small">A sub editor reviews your story before it goes live.</p>{% endif %}
+      </div>
+
+      <div class="card side-card">
+        <h2>Type</h2>
+        <select name="kind" aria-label="Article type">
+          {% for k in kinds %}<option value="{{ k.value }}" {% if k.selected %}selected{% endif %}>{{ k.label }}</option>{% endfor %}
+        </select>
+      </div>
+
+      <div class="card side-card">
+        <h2>Featured photo</h2>
+        <input type="hidden" name="featured_image" id="featured-image" value="{{ values.featured_image }}">
+        <div class="featured-preview" id="featured-preview" {% if values.featured_image.is_empty() %}hidden{% endif %}>
+          <img id="featured-img" src="{{ values.featured_image }}" alt="">
+        </div>
+        <input type="file" id="featured-file" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
+        <div class="actions wrap">
+          <button type="button" class="btn btn-secondary btn-sm" id="featured-pick">Choose photo</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="featured-remove" {% if values.featured_image.is_empty() %}hidden{% endif %}>Remove</button>
+        </div>
+        <p class="hint" id="featured-status" role="status"></p>
+        <div class="field">
+          <label for="featured_image_caption">Photo caption / credit</label>
+          <input id="featured_image_caption" type="text" name="featured_image_caption" maxlength="500" value="{{ values.featured_image_caption }}">
+        </div>
+      </div>
+
+      <div class="card side-card">
+        <h2>Categories</h2>
+        <div class="choice-stack">
+        {% for c in categories %}
+          <label class="choice"><input type="checkbox" name="category_ids" value="{{ c.id }}" data-category="{{ c.id }}" {% if c.checked %}checked{% endif %}><span>{{ c.label }}</span></label>
+        {% endfor %}
+        </div>
+        {% if categories.is_empty() %}<p class="muted small">No categories yet. Ask an editor to create some.</p>{% endif %}
+      </div>
+
+      {% if !sub_groups.is_empty() %}
+      <div class="card side-card" id="sub-card">
+        <h2>Sub categories</h2>
+        {% for g in sub_groups %}
+        <div class="sub-group" data-parent="{{ g.category_id }}">
+          <div class="sub-group-title">{{ g.category_name }}</div>
+          {% for s in g.items %}
+          <label class="choice"><input type="checkbox" name="sub_category_ids" value="{{ s.id }}" {% if s.checked %}checked{% endif %}><span>{{ s.label }}</span></label>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="card side-card">
+        <h2>Tags</h2>
+        <input type="search" id="tag-filter" placeholder="Find a tag" aria-label="Find a tag" autocomplete="off">
+        <div class="choice-stack tag-list" id="tag-list">
+        {% for t in tags %}
+          <label class="choice" data-name="{{ t.label }}"><input type="checkbox" name="tag_ids" value="{{ t.id }}" {% if t.checked %}checked{% endif %}><span>{{ t.label }}</span></label>
+        {% endfor %}
+        </div>
+        {% if tags.is_empty() %}<p class="muted small">No tags yet.</p>{% endif %}
+      </div>
+    </aside>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,36 @@
+/* Menu builder. Loaded after admin.css / newsroom.css. */
+.menu-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 1.25rem; align-items: start; }
+.menu-side { display: flex; flex-direction: column; gap: 1rem; position: sticky; top: 1rem; }
+.menu-card { padding: 1rem 1.1rem 1.1rem; }
+.menu-card-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem; margin-bottom: .75rem; }
+
+.menu-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .4rem; }
+.menu-root { padding: .5rem; border: 1px dashed var(--line); border-radius: 8px; background: var(--bg); min-height: 64px; }
+.menu-root:empty::before { content: attr(data-empty); color: var(--muted); text-align: center; padding: 1rem 0; font-size: .85rem; }
+
+.menu-node { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.menu-row { display: flex; align-items: center; gap: .6rem; padding: .5rem .65rem; flex-wrap: wrap; }
+.menu-text { flex: 1; min-width: 140px; display: flex; flex-direction: column; }
+.menu-text strong { font-weight: 600; overflow-wrap: anywhere; }
+.menu-text small { color: var(--muted); font-size: .75rem; overflow-wrap: anywhere; }
+.menu-actions { display: inline-flex; gap: .35rem; }
+
+/* dropdown (children) area */
+.menu-children { margin: 0 .65rem .55rem 2rem; padding-left: .6rem; border-left: 2px solid var(--line); min-height: 8px; }
+.menu-children:empty { min-height: 10px; }
+.menu-children .menu-node { background: var(--bg); }
+body.is-dragging .menu-children { min-height: 44px; border-left-color: var(--accent); }
+body.is-dragging .menu-children:empty::before { content: attr(data-empty); color: var(--muted); font-size: .78rem; padding: .7rem 0; text-align: center; display: block; border: 1px dashed var(--line); border-radius: 6px; }
+/* two levels only: an item inside a dropdown never shows a dropdown area of its own */
+.menu-children .menu-children { display: none !important; }
+
+.choice-stack.scroll { max-height: 240px; overflow: auto; }
+
+@media (max-width: 1100px) {
+  .menu-layout { grid-template-columns: 1fr; }
+  .menu-side { position: static; }
+}
+@media (max-width: 640px) {
+  .menu-actions { width: 100%; }
+  .menu-children { margin-left: .75rem; }
+}

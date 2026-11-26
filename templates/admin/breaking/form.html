@@ -1,0 +1,39 @@
+{% extends "admin/base.html" %}
+{% block title %}{% if is_edit %}Edit headline{% else %}New headline{% endif %}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <a class="back" href="/breaking-news">&larr; Breaking news</a>
+    <h1>{% if is_edit %}Edit headline{% else %}New breaking headline{% endif %}</h1>
+  </div>
+</div>
+
+<form method="post" action="{% if is_edit %}/breaking-news/{{ id }}{% else %}/breaking-news{% endif %}">
+  <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+
+  <div class="card form wide">
+    <div class="field">
+      <label for="headline">Headline</label>
+      <input id="headline" class="headline" type="text" name="headline" maxlength="255" value="{{ values.headline }}" required>
+    </div>
+
+    <div class="field">
+      <label for="path">Path</label>
+      <input id="path" type="text" name="path" maxlength="500" value="{{ values.path }}" placeholder="/news/your-article-slug" required>
+      <span class="hint">A site path starting with <code>/</code>, or a full <code>https://</code> link.</span>
+    </div>
+
+    <div class="field">
+      <label class="choice">
+        <input type="checkbox" name="is_active" value="1" {% if values.is_active %}checked{% endif %}>
+        <span>Show in the breaking news list</span>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn">Save</button>
+      <a class="btn btn-secondary" href="/breaking-news">Cancel</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

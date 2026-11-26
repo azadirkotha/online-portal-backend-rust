@@ -1,0 +1,49 @@
+{% extends "admin/base.html" %}
+{% block title %}Category leads{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Front page</h1>
+    <p class="subtitle">Lead 1 leads the category's front-page section. Lead 1 and 2 are the two lead stories on the category page. &ldquo;Automatic&rdquo; uses the newest story.</p>
+  </div>
+</div>
+
+<nav class="tabs" aria-label="Front page sections">
+  <a href="/front-page">Main section</a>
+  <a href="/front-page/categories">Category sections</a>
+  <a href="/front-page/leads" aria-current="page">Category leads</a>
+  <a href="/front-page/header">Header highlights</a>
+</nav>
+
+<form method="post" action="/front-page/leads">
+  <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+
+  {% for s in sections %}
+  <section class="card form wide lead-card">
+    <h2>{{ s.name }}</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label for="lead1_{{ s.category_id }}">Lead 1</label>
+        <select id="lead1_{{ s.category_id }}" name="lead1_{{ s.category_id }}">
+          <option value="0">Automatic (newest)</option>
+          {% for o in s.options1 %}<option value="{{ o.id }}" {% if o.checked %}selected{% endif %}>{{ o.label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="lead2_{{ s.category_id }}">Lead 2</label>
+        <select id="lead2_{{ s.category_id }}" name="lead2_{{ s.category_id }}">
+          <option value="0">Automatic (next newest)</option>
+          {% for o in s.options2 %}<option value="{{ o.id }}" {% if o.checked %}selected{% endif %}>{{ o.label }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+  </section>
+  {% endfor %}
+
+  {% if sections.is_empty() %}
+  <div class="card form wide"><div class="notice">There are no active categories yet.</div></div>
+  {% else %}
+  <div class="actions form-actions"><button type="submit" class="btn">Save leads</button></div>
+  {% endif %}
+</form>
+{% endblock %}

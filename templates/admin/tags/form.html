@@ -1,0 +1,31 @@
+{% extends "admin/base.html" %}
+{% block title %}{% if is_edit %}Edit tag{% else %}New tag{% endif %}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <a class="back" href="/tags">&larr; Tags</a>
+    <h1>{% if is_edit %}Edit tag{% else %}New tag{% endif %}</h1>
+  </div>
+</div>
+
+<form method="post" action="{% if is_edit %}/tags/{{ id }}{% else %}/tags{% endif %}" class="card form">
+  <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+
+  <div class="form-grid">
+    <div class="field">
+      <label for="name">Name</label>
+      <input id="name" type="text" name="name" maxlength="80" value="{{ values.name }}" required>
+    </div>
+    <div class="field">
+      <label for="slug">Slug</label>
+      <input id="slug" type="text" name="slug" maxlength="100" value="{{ values.slug }}" autocapitalize="none">
+      <span class="hint">Leave blank to generate it from the name.</span>
+    </div>
+  </div>
+
+  <div class="actions form-actions">
+    <button type="submit" class="btn">{% if is_edit %}Save changes{% else %}Create tag{% endif %}</button>
+    <a href="/tags" class="btn btn-secondary">Cancel</a>
+  </div>
+</form>
+{% endblock %}

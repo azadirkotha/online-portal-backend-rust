@@ -1,0 +1,41 @@
+/* Avatars, the image-upload widget, My account and site settings. Loaded after admin.css. */
+.avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex: none; background: var(--subtle); display: block; }
+.avatar-initial { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; flex: none; background: var(--accent-soft); color: var(--accent); font-weight: 600; font-size: .8rem; }
+a.account { flex: 1; min-width: 0; display: flex; align-items: center; gap: .6rem; padding: .3rem .4rem; border-radius: 8px; text-decoration: none; color: var(--ink); }
+a.account:hover { background: var(--subtle); text-decoration: none; }
+
+.user-cell { display: flex; align-items: center; gap: .65rem; min-width: 0; }
+.user-cell .avatar-img, .user-cell .avatar-initial { width: 36px; height: 36px; font-size: .95rem; }
+.user-cell-text { display: flex; flex-direction: column; min-width: 0; text-align: left; }
+.user-cell-text small { color: var(--muted); font-size: .75rem; }
+
+.image-field { display: flex; flex-direction: column; gap: .55rem; align-items: flex-start; }
+.image-preview { max-width: 100%; }
+.image-preview img { display: block; max-width: 100%; max-height: 160px; border: 1px solid var(--line); border-radius: 8px; background: var(--subtle); }
+.image-preview.round img { width: 120px; height: 120px; max-height: none; border-radius: 50%; object-fit: cover; }
+
+.stack-lg { display: flex; flex-direction: column; gap: 1rem; }
+.stack-lg > .form { max-width: 760px; }
+.settings-group { margin-bottom: 1rem; }
+.settings-group h2, .form h2 { font-size: 1rem; }
+.settings-group .hint { margin: .15rem 0 0; }
+fieldset.plain { margin: 0; padding: 0; border: 0; min-width: 0; }
+.error-list { margin: .4rem 0 0; padding-left: 1.2rem; }
+
+.account-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 1.25rem; align-items: start; }
+.account-side { display: flex; flex-direction: column; gap: 1rem; }
+.press-card { border-left: 4px solid var(--accent); }
+.press-card .meta dd { font-size: .95rem; }
+
+@media (max-width: 1000px) { .account-grid { grid-template-columns: 1fr; } }
+
+/* inputs the base stylesheet did not cover: phone, link and date fields */
+input[type=tel], input[type=url], input[type=date], input[type=number] {
+  width: 100%; min-height: 42px; padding: .5rem .75rem;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--surface); color: var(--ink);
+  font: inherit; font-size: 1rem;
+}
+input[type=tel]:focus, input[type=url]:focus, input[type=date]:focus, input[type=number]:focus {
+  outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent);
+}

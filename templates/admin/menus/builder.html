@@ -1,0 +1,135 @@
+{% extends "admin/base.html" %}
+{% block title %}Menus{% endblock %}
+{% block head %}
+  <script src="/static/vendor/sortable/Sortable.min.js" defer></script>
+  <script src="/static/menu-builder.js" defer></script>
+{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Menus</h1>
+    <p class="subtitle">Build the navigation of the public site. Add categories, sub categories or your own links, then drag to arrange.</p>
+  </div>
+</div>
+
+<nav class="tabs" aria-label="Menus">
+  {% for t in tabs %}<a href="/menus/{{ t.key }}" {% if t.active %}aria-current="page"{% endif %}>{{ t.label }}</a>{% endfor %}
+</nav>
+
+<div class="menu-layout">
+  <div class="menu-main">
+    <form method="post" action="/menus/{{ location }}/order" id="menu-form">
+      <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+      <input type="hidden" name="tree" id="menu-tree">
+
+      <div class="card menu-card">
+        <header class="menu-card-head">
+          <h2>{{ location_label }}</h2>
+          {% if can_write %}<span class="muted small">Drag the &#8942;&#8942; handle. Drop an item into another item&rsquo;s dropdown area to make it a sub menu.</span>{% endif %}
+        </header>
+
+        <ul class="menu-list menu-root" id="menu-root" data-empty="This menu is empty. Add items from the right.">
+          {% for n in nodes %}
+          <li class="menu-node" data-id="{{ n.id }}">
+            <div class="menu-row">
+              {% if can_write %}<span class="fp-handle" aria-hidden="true" title="Drag to move">&#8942;&#8942;</span>{% endif %}
+              <span class="menu-text"><strong>{{ n.display }}</strong>{% if !n.detail.is_empty() %}<small>{{ n.detail }}</small>{% endif %}</span>
+              <span class="badge">{{ n.kind_label() }}</span>
+              {% if n.new_tab %}<span class="badge">New tab</span>{% endif %}
+              {% if !n.active %}<span class="badge warn">Hidden</span>{% endif %}
+              {% if can_write %}
+              <span class="menu-actions">
+                <a class="btn btn-secondary btn-sm" href="/menus/items/{{ n.id }}/edit">Edit</a>
+                <button type="button" class="btn btn-danger btn-sm" data-delete="{{ n.id }}" data-name="{{ n.display }}">Remove</button>
+              </span>
+              {% endif %}
+            </div>
+            <ul class="menu-list menu-children" data-empty="Drop here to make a dropdown">
+              {% for c in n.children %}
+              <li class="menu-node" data-id="{{ c.id }}">
+                <div class="menu-row">
+                  {% if can_write %}<span class="fp-handle" aria-hidden="true" title="Drag to move">&#8942;&#8942;</span>{% endif %}
+                  <span class="menu-text"><strong>{{ c.display }}</strong>{% if !c.detail.is_empty() %}<small>{{ c.detail }}</small>{% endif %}</span>
+                  <span class="badge">{{ c.kind_label() }}</span>
+                  {% if c.new_tab %}<span class="badge">New tab</span>{% endif %}
+                  {% if !c.active %}<span class="badge warn">Hidden</span>{% endif %}
+                  {% if can_write %}
+                  <span class="menu-actions">
+                    <a class="btn btn-secondary btn-sm" href="/menus/items/{{ c.id }}/edit">Edit</a>
+                    <button type="button" class="btn btn-danger btn-sm" data-delete="{{ c.id }}" data-name="{{ c.display }}">Remove</button>
+                  </span>
+                  {% endif %}
+                </div>
+                <ul class="menu-list menu-children"></ul>
+              </li>
+              {% endfor %}
+            </ul>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      {% if can_write %}
+      <div class="actions form-actions sticky-actions">
+        <button type="submit" class="btn">Save order</button>
+        <span class="muted small" id="menu-dirty" hidden>Unsaved changes</span>
+      </div>
+      {% endif %}
+    </form>
+
+    {% if can_write %}
+    <form method="post" id="menu-delete-form" hidden><input type="hidden" name="csrf_token" value="{{ layout.csrf }}"></form>
+    {% endif %}
+  </div>
+
+  {% if can_write %}
+  <aside class="menu-side">
+    <form method="post" action="/menus/{{ location }}/add-categories" class="card side-card">
+      <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+      <h2>Categories</h2>
+      {% if categories.is_empty() %}
+        <p class="muted small">Every category is already in this menu.</p>
+      {% else %}
+        <div class="choice-stack scroll">
+          {% for c in categories %}<label class="choice"><input type="checkbox" name="ids" value="{{ c.id }}"><span>{{ c.label }}</span></label>{% endfor %}
+        </div>
+        <button type="submit" class="btn btn-secondary btn-sm">Add to menu</button>
+      {% endif %}
+    </form>
+
+    <form method="post" action="/menus/{{ location }}/add-sub-categories" class="card side-card">
+      <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+      <h2>Sub categories</h2>
+      {% if sub_groups.is_empty() %}
+        <p class="muted small">Every sub category is already in this menu.</p>
+      {% else %}
+        <p class="muted small">They go into their category&rsquo;s dropdown when that category is in the menu.</p>
+        <div class="choice-stack scroll">
+          {% for g in sub_groups %}
+            <div class="sub-group-title">{{ g.name }}</div>
+            {% for s in g.items %}<label class="choice"><input type="checkbox" name="ids" value="{{ s.id }}"><span>{{ s.label }}</span></label>{% endfor %}
+          {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-secondary btn-sm">Add to menu</button>
+      {% endif %}
+    </form>
+
+    <form method="post" action="/menus/{{ location }}/add-link" class="card side-card">
+      <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+      <h2>Custom link</h2>
+      <div class="field">
+        <label for="link-label">Label</label>
+        <input id="link-label" type="text" name="label" maxlength="120" required>
+      </div>
+      <div class="field">
+        <label for="link-url">Link</label>
+        <input id="link-url" type="text" name="url" maxlength="500" placeholder="/about  or  https://example.com" autocapitalize="none" required>
+        <span class="hint">A page on this site (/about), or https://&hellip;, mailto: or tel:</span>
+      </div>
+      <label class="choice"><input type="checkbox" name="new_tab" value="on"><span>Open in a new tab</span></label>
+      <button type="submit" class="btn btn-secondary btn-sm">Add link</button>
+    </form>
+  </aside>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "admin/base.html" %}
+{% block title %}Breaking news{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Breaking news</h1>
+    <p class="subtitle">Tick the headlines that should appear in the breaking news bar, then press Save selection.</p>
+  </div>
+  <a class="btn" href="/breaking-news/new">
+    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    New headline
+  </a>
+</div>
+
+<form method="get" action="/breaking-news" class="actions wrap" style="margin:1rem 0;align-items:flex-end;gap:.75rem">
+  <div class="field" style="flex:1;min-width:14rem">
+    <label for="f-q">Headline</label>
+    <input id="f-q" type="text" name="q" value="{{ q }}" maxlength="100" placeholder="Search by headline">
+  </div>
+  <div class="actions">
+    <button type="submit" class="btn btn-sm">Search</button>
+    {% if !q.is_empty() %}<a class="btn btn-secondary btn-sm" href="/breaking-news">Clear</a>{% endif %}
+  </div>
+</form>
+
+<p class="muted">{{ active_count }} headline(s) currently shown on the site.</p>
+
+<form method="post" action="/breaking-news/bulk">
+  <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+  <input type="hidden" name="q" value="{{ q }}">
+  <input type="hidden" name="page" value="{{ page }}">
+
+  <div class="card table-card">
+    <table class="table">
+      <thead>
+        <tr><th>Show</th><th>Headline</th><th>Path</th><th>Created</th><th><span class="sr-only">Actions</span></th></tr>
+      </thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td data-label="Show">
+            <input type="hidden" name="page_ids" value="{{ r.id }}">
+            <input type="checkbox" name="active_ids" value="{{ r.id }}" aria-label="Show this headline" {% if r.is_active %}checked{% endif %}>
+          </td>
+          <td data-label="Headline"><a class="row-title" href="/breaking-news/{{ r.id }}/edit">{{ r.headline }}</a></td>
+          <td data-label="Path"><code>{{ r.path }}</code></td>
+          <td data-label="Created">{{ r.created_at }}</td>
+          <td class="cell-actions">
+            <a class="btn btn-secondary btn-sm" href="/breaking-news/{{ r.id }}/edit">Edit</a>
+            <button type="submit" class="btn btn-secondary btn-sm" formaction="/breaking-news/{{ r.id }}/delete"
+                    onclick="return confirm('Delete this headline?')">Delete</button>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% if rows.is_empty() %}<p class="empty">{% if !q.is_empty() %}No headlines match your search.{% else %}Nothing here yet.{% endif %}</p>{% endif %}
+  </div>
+
+  {% if !rows.is_empty() %}
+  <div class="actions" style="margin-top:1rem">
+    <button type="submit" class="btn">Save selection</button>
+  </div>
+  {% endif %}
+</form>
+
+{% if total > 0 %}
+<div class="pager-bar">
+  <p class="muted pager-info">Showing {{ shown_from }}&ndash;{{ shown_to }} of {{ total }}</p>
+
+  {% if pages > 1 %}
+  <nav class="pager-pages" aria-label="Pages">
+    {% if has_prev %}<a class="btn btn-secondary btn-sm" href="/breaking-news?q={{ q_enc }}&page={{ page - 1 }}">&larr; Newer</a>{% endif %}
+    <span class="btn btn-sm" aria-current="page">{{ page }} / {{ pages }}</span>
+    {% if has_next %}<a class="btn btn-secondary btn-sm" href="/breaking-news?q={{ q_enc }}&page={{ page + 1 }}">Older &rarr;</a>{% endif %}
+  </nav>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

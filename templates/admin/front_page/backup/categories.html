@@ -1,0 +1,41 @@
+{% extends "admin/base.html" %}
+{% block title %}Front page categories{% endblock %}
+{% block head %}
+  <script src="/static/vendor/sortable/Sortable.min.js" defer></script>
+  <script src="/static/front-page.js" defer></script>
+{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Front page</h1>
+    <p class="subtitle">Choose which categories get their own section, and drag to set the order.</p>
+  </div>
+</div>
+
+<nav class="tabs" aria-label="Front page sections">
+  <a href="/front-page">Main section</a>
+  <a href="/front-page/categories" aria-current="page">Category sections</a>
+  <a href="/front-page/leads">Category leads</a>
+</nav>
+
+<form method="post" action="/front-page/categories" id="cat-form">
+  <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+  <input type="hidden" name="order" id="in-order">
+
+  <div class="card form wide">
+    <ul class="fp-list vertical" id="cat-list">
+      {% for c in items %}
+      <li class="fp-item cat-item" data-id="{{ c.id }}">
+        <span class="fp-handle" aria-hidden="true" title="Drag to reorder">&#8942;&#8942;</span>
+        <label class="choice grow"><input type="checkbox" name="show" value="{{ c.id }}" {% if c.shown %}checked{% endif %}><span>{{ c.name }}</span></label>
+      </li>
+      {% endfor %}
+    </ul>
+    {% if items.is_empty() %}<p class="empty">No active categories yet.</p>{% endif %}
+    <div class="actions form-actions">
+      <button type="submit" class="btn">Save</button>
+      <span class="muted small">Ticked categories appear on the front page in this order. Unticked ones are listed last.</span>
+    </div>
+  </div>
+</form>
+{% endblock %}

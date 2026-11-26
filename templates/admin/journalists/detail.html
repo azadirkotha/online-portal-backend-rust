@@ -1,0 +1,81 @@
+{% extends "admin/base.html" %}
+{% block title %}Journalist application{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <a class="back" href="/journalists">&larr; Applications</a>
+    <h1>{{ a.full_name }}</h1>
+    <p class="subtitle">
+      @{{ a.username }} &middot;
+      {% if a.status == "approved" %}<span class="badge ok">Approved</span>{% else if a.status == "rejected" %}<span class="badge">Rejected</span>{% else %}<span class="badge">Pending</span>{% endif %}
+    </p>
+  </div>
+  <a class="btn btn-secondary" href="/journalists/{{ a.id }}/edit">Edit</a>
+</div>
+
+<div class="stack-lg">
+  <section class="card form wide">
+    <h2>Applicant</h2>
+    <div class="form-grid">
+      <div class="field"><label>Email</label><div>{{ a.email }}</div></div>
+      <div class="field"><label>Phone</label><div>{{ a.phone }}</div></div>
+      <div class="field"><label>NID number</label><div>{{ a.nid_number }}</div></div>
+      <div class="field"><label>Applied on</label><div>{{ a.created_at }}</div></div>
+      <div class="field"><label>Occupation</label><div>{{ a.occupation }}</div></div>
+      <div class="field"><label>Current organisation</label><div>{% if a.current_platform.is_empty() %}<span class="muted">&mdash;</span>{% else %}{{ a.current_platform }}{% endif %}</div></div>
+      <div class="field span-2"><label>Organisation phone</label><div>{% if a.platform_phone.is_empty() %}<span class="muted">&mdash;</span>{% else %}{{ a.platform_phone }}{% endif %}</div></div>
+      <div class="field span-2"><label>About</label><div style="white-space:pre-wrap">{% if a.about.is_empty() %}<span class="muted">&mdash;</span>{% else %}{{ a.about }}{% endif %}</div></div>
+    </div>
+  </section>
+
+  <section class="card form wide">
+    <h2>Documents</h2>
+    {% if has_photo || has_nid || has_resume %}
+    <p class="hint">Private files &mdash; only people with review access can open them.</p>
+    <div class="actions wrap">
+      {% if has_photo %}<a class="btn btn-secondary btn-sm" href="/journalists/{{ a.id }}/file/photo" target="_blank" rel="noopener">Photo</a>{% endif %}
+      {% if has_nid %}<a class="btn btn-secondary btn-sm" href="/journalists/{{ a.id }}/file/nid" target="_blank" rel="noopener">NID copy</a>{% endif %}
+      {% if has_resume %}<a class="btn btn-secondary btn-sm" href="/journalists/{{ a.id }}/file/resume" target="_blank" rel="noopener">Resume (CV)</a>{% endif %}
+    </div>
+    {% else %}
+    <p class="hint">No documents on file. This journalist was added by an administrator.</p>
+    {% endif %}
+  </section>
+
+  {% if a.status == "pending" %}
+  <section class="card form wide">
+    <h2>Decision</h2>
+    <form method="post" action="/journalists/{{ a.id }}/approve"
+          onsubmit="return confirm('Approve this application? The account will be activated and given the Journalist role.');">
+      <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+      <button type="submit" class="btn">Approve application</button>
+    </form>
+    <hr>
+    <form method="post" action="/journalists/{{ a.id }}/reject" class="stack-lg">
+      <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+      <div class="field">
+        <label for="note">Reason for rejection</label>
+        <textarea id="note" name="note" rows="3" minlength="3" maxlength="500" required></textarea>
+        <span class="hint">The reason is saved with the application.</span>
+      </div>
+      <div class="actions">
+        <button type="submit" class="btn btn-secondary">Reject application</button>
+      </div>
+    </form>
+  </section>
+  {% else %}
+  <section class="card form wide">
+    <h2>Review</h2>
+    <div class="form-grid">
+      <div class="field"><label>Reviewed on</label><div>{{ a.reviewed_at }}</div></div>
+      {% if a.status == "rejected" %}
+      <div class="field span-2"><label>Reason</label><div style="white-space:pre-wrap">{{ a.review_note }}</div></div>
+      {% endif %}
+    </div>
+    {% if a.status == "approved" %}
+    <p class="hint">Designation, photo, journalist number, blood group and card dates are set on the <a href="/journalists/{{ a.id }}/edit">edit page</a>.</p>
+    {% endif %}
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

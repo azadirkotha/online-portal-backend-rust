@@ -1,0 +1,64 @@
+{% extends "admin/base.html" %}
+{% block title %}Site settings{% endblock %}
+{% block head %}
+  <script src="/static/image-field.js" defer></script>
+{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Site settings</h1>
+    <p class="subtitle">The portal&rsquo;s name, logo, publisher, contact details and social links. The public site reads them from the API, so a change shows up everywhere at once.</p>
+  </div>
+</div>
+
+{% if !errors.is_empty() %}
+<div class="notice warn">
+  <strong>Nothing was saved. Please fix:</strong>
+  <ul class="error-list">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<form method="post" action="/settings" id="settings-form" data-csrf="{{ layout.csrf }}">
+  <input type="hidden" name="csrf_token" value="{{ layout.csrf }}">
+  <fieldset class="plain" {% if !can_write %}disabled{% endif %}>
+  {% for g in groups %}
+  <section class="card form wide settings-group">
+    <div>
+      <h2>{{ g.title }}</h2>
+      <p class="hint">{{ g.hint }}</p>
+    </div>
+    <div class="form-grid">
+      {% for f in g.fields %}
+      <div class="field {% if f.kind == "textarea" || f.kind == "image" %}span-2{% endif %}">
+        <label for="f-{{ f.key }}">{{ f.label }}</label>
+        {% if f.kind == "textarea" %}
+          <textarea id="f-{{ f.key }}" name="{{ f.key }}" rows="3" maxlength="{{ f.max }}">{{ f.value }}</textarea>
+        {% else if f.kind == "image" %}
+          <div class="image-field" data-image-field>
+            <input type="hidden" id="f-{{ f.key }}" name="{{ f.key }}" value="{{ f.value }}" data-image-value>
+            <div class="image-preview" data-image-preview {% if f.value.is_empty() %}hidden{% endif %}><img {% if !f.value.is_empty() %}src="{{ f.value }}"{% endif %} alt="" data-image-img></div>
+            <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" data-image-file hidden>
+            <div class="actions wrap">
+              <button type="button" class="btn btn-secondary btn-sm" data-image-pick>Choose image</button>
+              <button type="button" class="btn btn-secondary btn-sm" data-image-remove {% if f.value.is_empty() %}hidden{% endif %}>Remove</button>
+            </div>
+            <p class="hint" data-image-status role="status"></p>
+          </div>
+        {% else %}
+          <input id="f-{{ f.key }}" type="{{ f.input_type }}" name="{{ f.key }}" maxlength="{{ f.max }}" value="{{ f.value }}" autocapitalize="none">
+        {% endif %}
+        {% if !f.help.is_empty() %}<span class="hint">{{ f.help }}</span>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+  </fieldset>
+
+  {% if can_write %}
+  <div class="actions form-actions sticky-actions"><button type="submit" class="btn">Save settings</button></div>
+  {% else %}
+  <p class="muted small">You can view these settings but not change them.</p>
+  {% endif %}
+</form>
+{% endblock %}
